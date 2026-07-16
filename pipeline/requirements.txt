@@ -1,0 +1,5 @@
+# Pipeline Overture (principal)
+duckdb==1.5.3
+duckdb-extension-httpfs==1.5.3
+shapely>=2.0
+requests>=2.28

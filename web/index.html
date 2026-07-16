@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>São Carlos 3D — maquete interativa</title>
+  <link rel="stylesheet" href="vendor/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="painel">
+    <h1>São Carlos/SP · 3D</h1>
+    <p class="sub">Relevo, ruas e prédios — dados abertos</p>
+
+    <label class="controle">
+      Exagero do relevo: <span id="exagero-valor">1.6×</span>
+      <input id="exagero" type="range" min="1" max="4" step="0.1" value="1.6">
+    </label>
+
+    <div class="linha">
+      <button id="modo-3d" class="ativo">3D</button>
+      <button id="modo-2d">2D (planta)</button>
+    </div>
+
+    <div class="camadas">
+      <label><input type="checkbox" id="cb-predios" checked> Prédios</label>
+      <label><input type="checkbox" id="cb-vias" checked> Vias</label>
+      <label><input type="checkbox" id="cb-sombra" checked> Sombreamento do relevo</label>
+    </div>
+
+    <div id="info-cota">Cota no cursor: <span id="cota">—</span></div>
+
+    <p class="dica">Arraste com o botão direito (ou Ctrl+arrasto) para girar e inclinar.</p>
+  </div>
+
+  <div id="carregando">
+    <div class="spinner"></div>
+    <p>Carregando a maquete…<br><small>prédios e vias (~dezenas de MB na primeira vez)</small></p>
+  </div>
+
+  <script src="vendor/maplibre-gl.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

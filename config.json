@@ -1,0 +1,21 @@
+{
+  "cidade": "São Carlos/SP",
+  "descricao": "Bounding box da mancha urbana de São Carlos e parâmetros de renderização.",
+  "bbox": {
+    "min_lon": -48.02,
+    "min_lat": -22.06,
+    "max_lon": -47.83,
+    "max_lat": -21.94
+  },
+  "centro": {
+    "lon": -47.8908,
+    "lat": -22.0175
+  },
+  "predios": {
+    "metros_por_pavimento": 3.2,
+    "altura_padrao_m": 7.0,
+    "altura_maxima_plausivel_m": 200.0
+  },
+  "overpass_url": "https://overpass-api.de/api/interpreter",
+  "overpass_timeout_s": 180
+}
