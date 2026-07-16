@@ -24,6 +24,13 @@
       <button id="modo-2d">2D (planta)</button>
     </div>
 
+    <div class="linha">
+      <button id="btn-tour">🌊 Entender a bacia</button>
+    </div>
+    <div class="linha">
+      <button id="modo-proposta" class="destaque">✨ Ver proposta (River Walk)</button>
+    </div>
+
     <div class="camadas">
       <label><input type="checkbox" id="cb-predios" checked> Prédios</label>
       <label><input type="checkbox" id="cb-vias" checked> Vias</label>
@@ -66,6 +73,15 @@
     <div id="info-cota">Cota no cursor: <span id="cota">—</span></div>
 
     <p class="dica">Arraste com o botão direito (ou Ctrl+arrasto) para girar e inclinar.</p>
+  </div>
+
+  <div id="tour" class="oculto">
+    <p id="tour-texto"></p>
+    <div class="tour-botoes">
+      <button id="tour-ant">‹ Anterior</button>
+      <button id="tour-prox">Próximo ›</button>
+      <button id="tour-sair">Sair</button>
+    </div>
   </div>
 
   <div id="carregando">

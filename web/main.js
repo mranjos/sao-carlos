@@ -114,6 +114,14 @@ const estilo = {
       type: "geojson",
       data: "../data/flood-points.geojson",
     },
+    intervencoes: {
+      type: "geojson",
+      data: "../data/interventions.geojson",
+    },
+    riverwalk: {
+      type: "geojson",
+      data: "../data/proposal-riverwalk.geojson",
+    },
   },
   layers: [
     { id: "fundo", type: "background", paint: { "background-color": "#dcd8cf" } },
@@ -169,6 +177,86 @@ const estilo = {
         "line-color": COR_VIA,
         "line-width": LARGURA_VIA,
         "line-opacity": 0.95,
+      },
+    },
+    // ---- cenário River Walk (modo proposta; oculto por padrão) ----
+    {
+      id: "rw-varzea", type: "fill", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "varzea"],
+      layout: { visibility: "none" },
+      paint: { "fill-color": "#b7e4c7", "fill-opacity": 0.55 },
+    },
+    {
+      id: "rw-lago", type: "fill", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "lago"],
+      layout: { visibility: "none" },
+      paint: { "fill-color": "#76c7e8", "fill-opacity": 0.9 },
+    },
+    {
+      id: "rw-canal", type: "fill", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "canal"],
+      layout: { visibility: "none" },
+      paint: { "fill-color": "#4aa3d8", "fill-opacity": 0.92 },
+    },
+    {
+      id: "rw-calcadao", type: "line", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "calcadao"],
+      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#d9a05b",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 13, 2, 17, 8],
+      },
+    },
+    {
+      id: "rw-passarela", type: "line", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "passarela"],
+      layout: { visibility: "none", "line-cap": "round" },
+      paint: { "line-color": "#6c584c", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1.5, 17, 5] },
+    },
+    {
+      id: "rw-arvore", type: "circle", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "arvore"],
+      layout: { visibility: "none" },
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 1.5, 17, 5],
+        "circle-color": "#2d6a4f",
+        "circle-stroke-color": "#95d5b2",
+        "circle-stroke-width": 1,
+      },
+    },
+    // ---- intervenções propostas (visão geral) ----
+    {
+      id: "intervencoes-area", type: "fill", source: "intervencoes",
+      filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": ["match", ["get", "tipo"],
+          "parque-alagavel", "#74c69d",
+          "praca-dagua", "#4cc9f0",
+          "ancora", "#ffd166",
+          "reservatorio", "#90caf9",
+          "#74c69d"],
+        "fill-opacity": 0.4,
+      },
+    },
+    {
+      id: "intervencoes-contorno", type: "line", source: "intervencoes",
+      filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+      layout: { visibility: "none" },
+      paint: { "line-color": "#2d6a4f", "line-width": 1.5, "line-dasharray": [3, 2] },
+    },
+    {
+      id: "intervencoes-linha", type: "line", source: "intervencoes",
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": ["match", ["get", "tipo"],
+          "boulevard", "#0c8599",
+          "circuito", "#7b2cbf",
+          "parque-linear", "#2f9e44",
+          "#0c8599"],
+        "line-width": ["match", ["get", "tipo"], "boulevard", 5, "circuito", 2.5, 4],
+        "line-dasharray": ["match", ["get", "tipo"], "circuito", ["literal", [0.4, 2]], ["literal", [2.5, 1.5]]],
       },
     },
     {
@@ -302,6 +390,40 @@ const estilo = {
       },
     },
     {
+      id: "intervencoes-nome", type: "symbol", source: "intervencoes",
+      minzoom: 12.8,
+      filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+      layout: {
+        visibility: "none",
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 12.5,
+      },
+      paint: {
+        "text-color": "#1b4332",
+        "text-halo-color": "rgba(255,255,255,0.95)",
+        "text-halo-width": 2,
+      },
+    },
+    {
+      id: "intervencoes-nome-linha", type: "symbol", source: "intervencoes",
+      minzoom: 12.8,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: {
+        visibility: "none",
+        "symbol-placement": "line",
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 12,
+        "symbol-spacing": 500,
+      },
+      paint: {
+        "text-color": "#1b4332",
+        "text-halo-color": "rgba(255,255,255,0.95)",
+        "text-halo-width": 2,
+      },
+    },
+    {
       id: "referencias-ponto",
       type: "circle",
       source: "referencias",
@@ -412,6 +534,116 @@ map.on("click", "alagamentos-nucleo", (e) => {
 });
 map.on("mouseenter", "alagamentos-nucleo", () => { map.getCanvas().style.cursor = "pointer"; });
 map.on("mouseleave", "alagamentos-nucleo", () => { map.getCanvas().style.cursor = ""; });
+
+// ---- popups das intervenções propostas ---------------------------------------
+const HORIZONTE = { curto: "curto prazo", medio: "médio prazo", longo: "longo prazo" };
+for (const id of ["intervencoes-area", "intervencoes-linha"]) {
+  map.on("click", id, (e) => {
+    const p = e.features[0].properties;
+    const aprox = p.aproximado ? " <em>(posição aproximada)</em>" : "";
+    new maplibregl.Popup({ maxWidth: "330px" })
+      .setLngLat(e.lngLat)
+      .setHTML(
+        `<strong>${p.name}</strong>${aprox}<br>` +
+        `<span class="pop-meta pop-proposta">Proposta · ${HORIZONTE[p.horizonte] || p.horizonte}</span>` +
+        `<p class="pop-desc">${p.desc}</p>`
+      )
+      .addTo(map);
+  });
+  map.on("mouseenter", id, () => { map.getCanvas().style.cursor = "pointer"; });
+  map.on("mouseleave", id, () => { map.getCanvas().style.cursor = ""; });
+}
+
+// ---- modo hoje ⇄ proposta ------------------------------------------------------
+const CAMADAS_PROPOSTA = [
+  "rw-varzea", "rw-lago", "rw-canal", "rw-calcadao", "rw-passarela", "rw-arvore",
+  "intervencoes-area", "intervencoes-contorno", "intervencoes-linha",
+  "intervencoes-nome", "intervencoes-nome-linha",
+];
+let modoProposta = false;
+const btnProposta = document.getElementById("modo-proposta");
+
+function aplicarModo() {
+  const vis = modoProposta ? "visible" : "none";
+  for (const id of CAMADAS_PROPOSTA) map.setLayoutProperty(id, "visibility", vis);
+  // no cenário proposto, os alertas de alagamento ficam esmaecidos (problema tratado)
+  map.setPaintProperty("alagamentos-halo", "circle-opacity", modoProposta ? 0.05 : 0.22);
+  map.setPaintProperty("alagamentos-halo", "circle-stroke-opacity", modoProposta ? 0.15 : 0.6);
+  map.setPaintProperty("alagamentos-nucleo", "circle-opacity", modoProposta ? 0.35 : 1);
+  document.getElementById("cb-alagamentos").disabled = modoProposta;
+  btnProposta.classList.toggle("ativo", modoProposta);
+  btnProposta.textContent = modoProposta ? "✕ Voltar a hoje" : "✨ Ver proposta (River Walk)";
+}
+
+btnProposta.addEventListener("click", () => {
+  modoProposta = !modoProposta;
+  aplicarModo();
+  if (modoProposta) {
+    map.flyTo({ center: [-47.8845, -22.0209], zoom: 15.1, pitch: 60, bearing: -105, duration: 2200 });
+  }
+});
+
+// ---- tour "Entender a bacia" ---------------------------------------------------
+const TOUR = [
+  {
+    c: [-47.889, -22.017], z: 12.1, p: 65, b: -20,
+    t: "<b>1/4 · A cidade entre espigões.</b> São Carlos cresceu sobre um planalto cortado por vales. Com o relevo exagerado 3×, repare como o terreno desce de todos os lados para o centro.",
+  },
+  {
+    c: [-47.882, -22.0215], z: 14.0, p: 62, b: -78,
+    t: "<b>2/4 · O vale do Gregório.</b> O córrego nasce a leste e desce por este vale, canalizado e espremido pelas marginais. Toda a chuva dos bairros altos converge para esta calha.",
+  },
+  {
+    c: [-47.8911, -22.0202], z: 15.3, p: 58, b: -30,
+    t: "<b>3/4 · A baixada do Mercado.</b> O ponto mais baixo do centro: o canal estrangulado transborda aqui — 130 lojas atingidas em 2020. É também o coração histórico: Mercadão, Catedral, Estação.",
+  },
+  {
+    c: [-47.887, -22.026], z: 13.3, p: 60, b: -10,
+    t: "<b>4/4 · A estratégia.</b> Reter a montante (Parque Alagável da Chaminé, à esquerda) e na bacia do Simeão (abaixo), depois requalificar a baixada. Toque em “✨ Ver proposta” para o cenário River Walk.",
+  },
+];
+let tourIdx = -1;
+const tourBox = document.getElementById("tour");
+const tourTexto = document.getElementById("tour-texto");
+
+function irParaEtapa(i) {
+  tourIdx = i;
+  const e = TOUR[i];
+  map.flyTo({ center: e.c, zoom: e.z, pitch: e.p, bearing: e.b, duration: 2600 });
+  tourTexto.innerHTML = e.t;
+  document.getElementById("tour-ant").disabled = i === 0;
+  document.getElementById("tour-prox").textContent = i === TOUR.length - 1 ? "Concluir" : "Próximo ›";
+}
+
+let exageroAntesDoTour = null;
+
+function sairDoTour() {
+  tourBox.classList.add("oculto");
+  tourIdx = -1;
+  if (exageroAntesDoTour != null) {
+    slider.value = exageroAntesDoTour;
+    sliderValor.textContent = parseFloat(exageroAntesDoTour).toFixed(1) + "×";
+    map.setTerrain({ source: "terreno", exaggeration: parseFloat(exageroAntesDoTour) });
+    exageroAntesDoTour = null;
+  }
+}
+
+document.getElementById("btn-tour").addEventListener("click", () => {
+  tourBox.classList.remove("oculto");
+  exageroAntesDoTour = slider.value;
+  slider.value = 3.0;
+  sliderValor.textContent = "3.0×";
+  map.setTerrain({ source: "terreno", exaggeration: 3.0 });
+  irParaEtapa(0);
+});
+document.getElementById("tour-ant").addEventListener("click", () => {
+  if (tourIdx > 0) irParaEtapa(tourIdx - 1);
+});
+document.getElementById("tour-prox").addEventListener("click", () => {
+  if (tourIdx < TOUR.length - 1) irParaEtapa(tourIdx + 1);
+  else sairDoTour();
+});
+document.getElementById("tour-sair").addEventListener("click", sairDoTour);
 
 // ---- cota (altitude) sob o cursor --------------------------------------------
 const cotaEl = document.getElementById("cota");

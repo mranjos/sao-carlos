@@ -123,6 +123,48 @@ html, body {
 }
 @keyframes girar { to { transform: rotate(360deg); } }
 
+.linha button.destaque {
+  background: #0c8599;
+  border-color: #0c8599;
+  color: #fff;
+  font-weight: 600;
+}
+.linha button.destaque.ativo { background: #1b4332; border-color: #1b4332; }
+
+/* tour da bacia */
+#tour {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  transform: translateX(-50%);
+  z-index: 15;
+  width: min(560px, calc(100% - 32px));
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(20, 33, 42, 0.92);
+  color: #f1f5f4;
+  font-size: 14.5px;
+  line-height: 1.5;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+#tour.oculto { display: none; }
+#tour p { margin: 0 0 10px; }
+.tour-botoes { display: flex; gap: 8px; }
+.tour-botoes button {
+  padding: 6px 14px;
+  border: 1px solid #5a7d8c;
+  border-radius: 6px;
+  background: transparent;
+  color: #e8f1f2;
+  cursor: pointer;
+  font-size: 13px;
+}
+.tour-botoes button:disabled { opacity: 0.35; cursor: default; }
+.tour-botoes #tour-prox { background: #2a9d8f; border-color: #2a9d8f; font-weight: 600; }
+.tour-botoes #tour-sair { margin-left: auto; border-color: transparent; color: #9fb8c2; }
+
+.pop-proposta { color: #1b4332 !important; }
+
 /* popup dos pontos de alagamento */
 .maplibregl-popup-content {
   font-family: system-ui, sans-serif;
