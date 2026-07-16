@@ -142,6 +142,7 @@ const map = new maplibregl.Map({
   minZoom: 9.5,
   maxBounds: [[-48.45, -22.42], [-47.40, -21.58]],
   attributionControl: { compact: false },
+  hash: true, // câmera na URL — permite compartilhar uma vista exata
 });
 
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
