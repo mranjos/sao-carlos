@@ -236,6 +236,15 @@ protagonista do espaço**.
    projeto na maquete.
 3. Usar o exagero de relevo da maquete para comunicar a lógica da bacia
    (por que a água converge para o Mercadão).
+4. **Maquete "como ficaria": cenário River Walk do Gregório** — versão da
+   maquete 3D com as alterações propostas aplicadas, inspirada na estética do
+   River Walk de San Antonio: canal do Gregório aberto com calçadão fluvial em
+   dois níveis (passeio na cota d'água + rua na cota alta), arborização e
+   iluminação cênica nas margens, fachadas comerciais voltadas para o canal no
+   trecho Mercadão–Praça, travessias em passarela e o Parque Alagável da
+   Chaminé no remate. Implementação: camada de projeto alternável na própria
+   maquete web (modo "hoje" ⇄ "proposta"), com geometrias novas (calha aberta,
+   passeios, vegetação, passarelas) desenhadas sobre o traçado real do canal.
 
 ---
 
