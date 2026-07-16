@@ -27,8 +27,22 @@
     <div class="camadas">
       <label><input type="checkbox" id="cb-predios" checked> Prédios</label>
       <label><input type="checkbox" id="cb-vias" checked> Vias</label>
+      <label><input type="checkbox" id="cb-nomes" checked> Nomes das ruas</label>
       <label><input type="checkbox" id="cb-sombra" checked> Sombreamento do relevo</label>
     </div>
+
+    <details class="legenda" open>
+      <summary>Legenda</summary>
+      <div class="leg-item"><span class="leg-linha" style="background:#e8843c;height:5px"></span> Rodovia (SP-310, SP-215…)</div>
+      <div class="leg-item"><span class="leg-linha" style="background:#f2a54a;height:4px"></span> Avenida principal</div>
+      <div class="leg-item"><span class="leg-linha" style="background:#f6c26b;height:3px"></span> Via secundária</div>
+      <div class="leg-item"><span class="leg-linha" style="background:#ffffff;height:3px;border:1px solid #ccc"></span> Rua local</div>
+      <div class="leg-item"><span class="leg-linha" style="background:#9b8ff5;height:3px"></span> Ferrovia</div>
+      <div class="leg-item"><span class="leg-linha" style="background:#d8cfc0;height:2px"></span> Pedestre / ciclovia / trilha</div>
+      <div class="leg-item">
+        <span class="leg-grad"></span> Prédio: cor = altura (3&nbsp;m → 60&nbsp;m+)
+      </div>
+    </details>
 
     <div id="info-cota">Cota no cursor: <span id="cota">—</span></div>
 

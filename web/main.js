@@ -43,8 +43,12 @@ const LARGURA_VIA = [
 ];
 
 // ---- estilo ---------------------------------------------------------------
+// glyphs precisam de URL absoluta; {fontstack}/{range} ficam literais p/ o MapLibre
+const GLYPHS_URL = new URL("fonts/", location.href).href + "{fontstack}/{range}.pbf";
+
 const estilo = {
   version: 8,
+  glyphs: GLYPHS_URL,
   sky: {
     "sky-color": "#a6c8e8",
     "horizon-color": "#e8ded0",
@@ -127,6 +131,51 @@ const estilo = {
         "fill-extrusion-vertical-gradient": true,
       },
     },
+    {
+      // nomes das vias principais — aparecem antes (zoom mais distante);
+      // por último na lista p/ ficarem sobre os prédios
+      id: "nomes-principais",
+      type: "symbol",
+      source: "vias",
+      minzoom: 11.5,
+      filter: ["all", ["has", "name"],
+        ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary"]]]],
+      layout: {
+        "symbol-placement": "line",
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 11.5, 11, 17, 16],
+        "symbol-spacing": 400,
+        "text-padding": 4,
+      },
+      paint: {
+        "text-color": "#7a4a12",
+        "text-halo-color": "rgba(255,255,255,0.92)",
+        "text-halo-width": 1.8,
+      },
+    },
+    {
+      // nomes das demais ruas — só em zoom próximo
+      id: "nomes-ruas",
+      type: "symbol",
+      source: "vias",
+      minzoom: 14,
+      filter: ["all", ["has", "name"],
+        ["!", ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary"]]]]],
+      layout: {
+        "symbol-placement": "line",
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 14, 10, 17, 14],
+        "symbol-spacing": 300,
+        "text-padding": 3,
+      },
+      paint: {
+        "text-color": "#4a4a4a",
+        "text-halo-color": "rgba(255,255,255,0.92)",
+        "text-halo-width": 1.6,
+      },
+    },
   ],
 };
 
@@ -187,6 +236,7 @@ function ligarCamada(idCheckbox, idsCamadas) {
 }
 ligarCamada("cb-predios", ["predios-3d"]);
 ligarCamada("cb-vias", ["vias-linha"]);
+ligarCamada("cb-nomes", ["nomes-principais", "nomes-ruas"]);
 ligarCamada("cb-sombra", ["sombra-relevo"]);
 
 // ---- cota (altitude) sob o cursor --------------------------------------------

@@ -42,6 +42,36 @@ html, body {
 .camadas { display: flex; flex-direction: column; gap: 4px; font-size: 13px; margin-bottom: 10px; }
 .camadas input { margin-right: 6px; }
 
+.legenda {
+  font-size: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.legenda summary { cursor: pointer; font-weight: 600; color: #444; }
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  color: #333;
+}
+.leg-linha {
+  display: inline-block;
+  width: 26px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.leg-grad {
+  display: inline-block;
+  width: 26px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #e3ddd3, #aebfce, #54779e);
+}
+
 #info-cota {
   font-size: 12px;
   color: #444;
