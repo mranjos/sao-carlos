@@ -44,6 +44,43 @@ ROAD_CLASSES = [
     "pedestrian", "footway", "cycleway", "track", "steps", "path",
 ]
 
+# Hidrografia mantida (theme=base/type=water) — exclui piscinas, bicas etc.
+WATER_SUBTYPES = ["stream", "river", "canal", "reservoir", "lake", "pond", "water"]
+
+# Pontos de referência: pool de candidatos vindo dessas categorias inteiras…
+LANDMARK_CATEGORIES = ["bus_station", "train_station", "airport"]
+# …mais qualquer lugar cujo nome case com este regex amplo. A seleção final
+# é feita por CURATED_LANDMARKS (uma feição por regra, a de maior confiança).
+LANDMARK_NAME_REGEX = (
+    r"(?i)UFSCar|Universidade Federal de S|Universidade de S.o Paulo|"
+    r"Campus.*USP|USP.*Campus|Instituto Federal|IFSP|"
+    r"Santa Casa|Hospital Universit|Hospital Escola|"
+    r"Mercado Municipal|Shopping Iguatemi|Passeio S|Catedral|"
+    r"Teatro Municipal|Esta..o Cultura|Kart.dromo|SESC"
+)
+
+# (regex sobre o nome, rótulo exibido, categoria p/ estilo no viewer)
+CURATED_LANDMARKS = [
+    (r"(?i)^universidade federal de s.o carlos$", "UFSCar", "universidade"),
+    (r"(?i)^universidade de s.o paulo - campus", "USP São Carlos", "universidade"),
+    (r"(?i)instituto federal de s.o paulo - c.mpus|ifsp campus s.o carlos",
+     "IFSP", "universidade"),
+    (r"(?i)^rodovi.ria de s.o carlos", "Rodoviária", "transporte"),
+    (r"(?i)^esta..o de s.o carlos$", "Estação Ferroviária", "transporte"),
+    (r"(?i)^aeroporto", "Aeroporto", "transporte"),
+    (r"(?i)^irmandade da santa casa", "Santa Casa", "saude"),
+    (r"(?i)^hospital universit.rio", "Hospital Universitário (UFSCar)", "saude"),
+    (r"(?i)^hospital escola", "Hospital Escola Municipal", "saude"),
+    (r"(?i)^mercado municipal", "Mercado Municipal", "comercio"),
+    (r"(?i)^shopping iguatemi", "Shopping Iguatemi", "comercio"),
+    (r"(?i)^passeio s.o carlos$", "Passeio São Carlos", "comercio"),
+    (r"(?i)^catedral", "Catedral", "cultura"),
+    (r"(?i)^teatro municipal", "Teatro Municipal", "cultura"),
+    (r"(?i)^sesc s.o carlos$", "SESC", "cultura"),
+    (r"(?i)^esta..o cultura$", "Estação Cultura", "cultura"),
+    (r"(?i)^parque do kart.dromo$", "Parque do Kartódromo", "parque"),
+]
+
 
 def load_config() -> dict:
     with open(os.path.join(ROOT, "config.json"), encoding="utf-8") as f:
@@ -182,9 +219,97 @@ def fetch_roads(con: duckdb.DuckDBPyConnection, cfg: dict) -> None:
     write_geojson("roads.geojson", features)
 
 
+def fetch_water(con: duckdb.DuckDBPyConnection, cfg: dict) -> None:
+    print("\n[água] listando arquivos do Overture…")
+    urls = list_parquet_urls(f"release/{RELEASE}/theme=base/type=water/")
+    print(f"  {len(urls)} arquivos; consultando bbox…")
+    t0 = time.time()
+    subtypes = ",".join(f"'{s}'" for s in WATER_SUBTYPES)
+    rows = con.execute(
+        f"""
+        SELECT geometry AS g, subtype, names.primary AS name
+        FROM read_parquet($urls, hive_partitioning=0)
+        WHERE {bbox_where(cfg)} AND subtype IN ({subtypes})
+        """,
+        {"urls": urls},
+    ).fetchall()
+    print(f"  {len(rows)} feições de água em {time.time()-t0:.0f}s; convertendo…")
+
+    features = []
+    for g, subtype, name in rows:
+        props = {"class": subtype}
+        if name:
+            props["name"] = name
+        feat = to_feature(bytes(g), props, tol_deg=0)
+        if feat:
+            features.append(feat)
+    write_geojson("water.geojson", features)
+
+
+def fetch_landmarks(con: duckdb.DuckDBPyConnection, cfg: dict) -> None:
+    """Pontos de referência: POIs curados + polígonos de campus universitário."""
+    print("\n[referências] POIs (places)…")
+    urls = list_parquet_urls(f"release/{RELEASE}/theme=places/type=place/")
+    cats = ",".join(f"'{c}'" for c in LANDMARK_CATEGORIES)
+    rows = con.execute(
+        f"""
+        SELECT geometry AS g, names.primary AS name,
+               categories.primary AS cat, confidence
+        FROM read_parquet($urls, hive_partitioning=0)
+        WHERE {bbox_where(cfg)} AND names.primary IS NOT NULL
+          AND (categories.primary IN ({cats})
+               OR regexp_matches(names.primary, '{LANDMARK_NAME_REGEX}'))
+        ORDER BY confidence DESC
+        """,
+        {"urls": urls},
+    ).fetchall()
+
+    # uma feição por regra curada: candidatos vêm ordenados por confiança,
+    # desempate pelo nome mais curto (evita "Farmácia X | Shopping Y")
+    import re
+    features = []
+    for regex, rotulo, cat in CURATED_LANDMARKS:
+        candidatos = [(g, name) for g, name, _, _ in rows if re.search(regex, name)]
+        if not candidatos:
+            print(f"  ⚠ sem candidato para: {rotulo}")
+            continue
+        g, _ = min(candidatos, key=lambda c: len(c[1]))
+        feat = to_feature(bytes(g), {"name": rotulo, "cat": cat}, tol_deg=0)
+        if feat:
+            features.append(feat)
+    print(f"  {len(features)} referências curadas (de {len(rows)} candidatos)")
+
+    print("[referências] campi (land_use educação)…")
+    urls = list_parquet_urls(f"release/{RELEASE}/theme=base/type=land_use/")
+    rows = con.execute(
+        f"""
+        SELECT geometry AS g, names.primary AS name, class
+        FROM read_parquet($urls, hive_partitioning=0)
+        WHERE {bbox_where(cfg)} AND subtype = 'education'
+          AND class IN ('university', 'college')
+        """,
+        {"urls": urls},
+    ).fetchall()
+    campi = []
+    for g, name, cls in rows:
+        props = {"class": cls}
+        if name:
+            props["name"] = name
+        feat = to_feature(bytes(g), props, tol_deg=0)
+        if feat:
+            campi.append(feat)
+    print(f"  {len(campi)} polígonos de campus")
+    write_geojson("landmarks.geojson", features)
+    write_geojson("campuses.geojson", campi)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--somente", choices=["predios", "vias"], default=None)
+    ap.add_argument(
+        "--somente",
+        choices=["predios", "vias", "agua", "referencias"],
+        default=None,
+    )
     args = ap.parse_args()
 
     cfg = load_config()
@@ -198,6 +323,10 @@ def main() -> int:
         fetch_buildings(con, cfg)
     if args.somente in (None, "vias"):
         fetch_roads(con, cfg)
+    if args.somente in (None, "agua"):
+        fetch_water(con, cfg)
+    if args.somente in (None, "referencias"):
+        fetch_landmarks(con, cfg)
     print("\nConcluído. Sirva o viewer: python -m http.server 8000  (na raiz do repo)")
     return 0
 

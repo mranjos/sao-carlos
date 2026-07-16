@@ -4,8 +4,12 @@ Maquete digital 3D da área urbana de **São Carlos/SP** para o navegador, com:
 
 - **Relevo real** (subidas, descidas, vales) com exagero vertical ajustável;
 - **Prédios em 3D** (footprints com altura real ou estimada);
-- **Malha viária** colorida por hierarquia (rodovias → ruas locais → ferrovia);
-- Navegação livre: girar, inclinar, zoom, modo 2D (planta) e 3D.
+- **Malha viária** colorida por hierarquia (rodovias → ruas locais → ferrovia)
+  com nomes das ruas;
+- **Hidrografia**: córregos (Gregório, Monjolinho, Tijuco Preto…), rios e represas;
+- **Pontos de referência** curados (UFSCar, USP, IFSP, Rodoviária, Santa Casa,
+  Mercado Municipal…) e polígonos dos campi universitários;
+- Navegação livre: girar, inclinar, zoom, modo 2D (planta) e 3D, legenda.
 
 O objetivo é servir de **base territorial para estudos de projeto arquitetônico
 e urbano** — leitura da topografia, do traçado viário e da massa construída.

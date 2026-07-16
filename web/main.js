@@ -42,6 +42,18 @@ const LARGURA_VIA = [
     1.5],
 ];
 
+// cores dos pontos de referência por categoria
+const COR_REFERENCIA = [
+  "match", ["get", "cat"],
+  "universidade", "#6741d9",
+  "transporte", "#e8590c",
+  "saude", "#e03131",
+  "comercio", "#0c8599",
+  "cultura", "#c2255c",
+  "parque", "#2f9e44",
+  "#495057",
+];
+
 // ---- estilo ---------------------------------------------------------------
 // glyphs precisam de URL absoluta; {fontstack}/{range} ficam literais p/ o MapLibre
 const GLYPHS_URL = new URL("fonts/", location.href).href + "{fontstack}/{range}.pbf";
@@ -86,6 +98,18 @@ const estilo = {
       type: "geojson",
       data: "../data/roads.geojson",
     },
+    agua: {
+      type: "geojson",
+      data: "../data/water.geojson",
+    },
+    campi: {
+      type: "geojson",
+      data: "../data/campuses.geojson",
+    },
+    referencias: {
+      type: "geojson",
+      data: "../data/landmarks.geojson",
+    },
   },
   layers: [
     { id: "fundo", type: "background", paint: { "background-color": "#dcd8cf" } },
@@ -98,6 +122,38 @@ const estilo = {
         "hillshade-shadow-color": "#5a5245",
         "hillshade-highlight-color": "#ffffff",
         "hillshade-accent-color": "#8a8172",
+      },
+    },
+    {
+      id: "campi-area",
+      type: "fill",
+      source: "campi",
+      paint: { "fill-color": "#b9dba9", "fill-opacity": 0.45 },
+    },
+    {
+      id: "campi-contorno",
+      type: "line",
+      source: "campi",
+      paint: { "line-color": "#74a35c", "line-width": 1.2, "line-dasharray": [3, 2] },
+    },
+    {
+      id: "agua-area",
+      type: "fill",
+      source: "agua",
+      filter: ["in", ["geometry-type"], ["literal", ["Polygon", "MultiPolygon"]]],
+      paint: { "fill-color": "#a5c9e8", "fill-opacity": 0.8 },
+    },
+    {
+      id: "agua-linha",
+      type: "line",
+      source: "agua",
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#5c9ac9",
+        "line-width": ["interpolate", ["linear"], ["zoom"],
+          11, ["match", ["get", "class"], "river", 1.6, "canal", 1.2, 0.7],
+          16, ["match", ["get", "class"], "river", 5, "canal", 4, 2.5]],
       },
     },
     {
@@ -155,6 +211,26 @@ const estilo = {
       },
     },
     {
+      // nomes dos córregos e represas
+      id: "agua-nomes",
+      type: "symbol",
+      source: "agua",
+      minzoom: 12.5,
+      filter: ["has", "name"],
+      layout: {
+        "symbol-placement": "line",
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 10.5, 17, 14],
+        "symbol-spacing": 450,
+      },
+      paint: {
+        "text-color": "#33658a",
+        "text-halo-color": "rgba(255,255,255,0.9)",
+        "text-halo-width": 1.5,
+      },
+    },
+    {
       // nomes das demais ruas — só em zoom próximo
       id: "nomes-ruas",
       type: "symbol",
@@ -174,6 +250,35 @@ const estilo = {
         "text-color": "#4a4a4a",
         "text-halo-color": "rgba(255,255,255,0.92)",
         "text-halo-width": 1.6,
+      },
+    },
+    {
+      id: "referencias-ponto",
+      type: "circle",
+      source: "referencias",
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 4, 16, 7],
+        "circle-color": COR_REFERENCIA,
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 2,
+      },
+    },
+    {
+      id: "referencias-nome",
+      type: "symbol",
+      source: "referencias",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 10, 11.5, 16, 15],
+        "text-offset": [0, 1.1],
+        "text-anchor": "top",
+        "text-optional": false,
+      },
+      paint: {
+        "text-color": COR_REFERENCIA,
+        "text-halo-color": "rgba(255,255,255,0.95)",
+        "text-halo-width": 2,
       },
     },
   ],
@@ -237,6 +342,8 @@ function ligarCamada(idCheckbox, idsCamadas) {
 ligarCamada("cb-predios", ["predios-3d"]);
 ligarCamada("cb-vias", ["vias-linha"]);
 ligarCamada("cb-nomes", ["nomes-principais", "nomes-ruas"]);
+ligarCamada("cb-agua", ["agua-area", "agua-linha", "agua-nomes"]);
+ligarCamada("cb-referencias", ["referencias-ponto", "referencias-nome", "campi-area", "campi-contorno"]);
 ligarCamada("cb-sombra", ["sombra-relevo"]);
 
 // ---- cota (altitude) sob o cursor --------------------------------------------

@@ -63,6 +63,19 @@ html, body {
   border-radius: 2px;
   flex-shrink: 0;
 }
+.leg-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+.leg-refs { gap: 4px; font-size: 11px; }
+.leg-refs .leg-dot { margin-left: 4px; }
+.leg-refs .leg-dot:first-child { margin-left: 0; }
+
 .leg-grad {
   display: inline-block;
   width: 26px;
