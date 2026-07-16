@@ -110,6 +110,10 @@ const estilo = {
       type: "geojson",
       data: "../data/landmarks.geojson",
     },
+    alagamentos: {
+      type: "geojson",
+      data: "../data/flood-points.geojson",
+    },
   },
   layers: [
     { id: "fundo", type: "background", paint: { "background-color": "#dcd8cf" } },
@@ -253,6 +257,51 @@ const estilo = {
       },
     },
     {
+      // zona de alerta de alagamento (halo translúcido)
+      id: "alagamentos-halo",
+      type: "circle",
+      source: "alagamentos",
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"],
+          11, ["match", ["get", "sev"], "alta", 16, 10],
+          16, ["match", ["get", "sev"], "alta", 46, 28]],
+        "circle-color": ["match", ["get", "sev"], "alta", "#d90429", "#f4771f"],
+        "circle-opacity": 0.22,
+        "circle-stroke-color": ["match", ["get", "sev"], "alta", "#d90429", "#f4771f"],
+        "circle-stroke-width": 1.5,
+        "circle-stroke-opacity": 0.6,
+      },
+    },
+    {
+      id: "alagamentos-nucleo",
+      type: "circle",
+      source: "alagamentos",
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 4.5, 16, 8],
+        "circle-color": ["match", ["get", "sev"], "alta", "#d90429", "#f4771f"],
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 2,
+      },
+    },
+    {
+      id: "alagamentos-nome",
+      type: "symbol",
+      source: "alagamentos",
+      minzoom: 12.5,
+      layout: {
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 12,
+        "text-offset": [0, 1.3],
+        "text-anchor": "top",
+      },
+      paint: {
+        "text-color": "#a4001f",
+        "text-halo-color": "rgba(255,255,255,0.95)",
+        "text-halo-width": 2,
+      },
+    },
+    {
       id: "referencias-ponto",
       type: "circle",
       source: "referencias",
@@ -344,7 +393,25 @@ ligarCamada("cb-vias", ["vias-linha"]);
 ligarCamada("cb-nomes", ["nomes-principais", "nomes-ruas"]);
 ligarCamada("cb-agua", ["agua-area", "agua-linha", "agua-nomes"]);
 ligarCamada("cb-referencias", ["referencias-ponto", "referencias-nome", "campi-area", "campi-contorno"]);
+ligarCamada("cb-alagamentos", ["alagamentos-halo", "alagamentos-nucleo", "alagamentos-nome"]);
 ligarCamada("cb-sombra", ["sombra-relevo"]);
+
+// ---- popup dos pontos de alagamento ------------------------------------------
+map.on("click", "alagamentos-nucleo", (e) => {
+  const p = e.features[0].properties;
+  const aprox = p.aproximado ? " <em>(posição aproximada)</em>" : "";
+  new maplibregl.Popup({ maxWidth: "320px" })
+    .setLngLat(e.features[0].geometry.coordinates)
+    .setHTML(
+      `<strong>${p.name}</strong>${aprox}<br>` +
+      `<span class="pop-meta">Córrego: ${p.corrego} · severidade ${p.sev === "alta" ? "ALTA" : "média"}</span>` +
+      `<p class="pop-desc">${p.desc}</p>` +
+      `<span class="pop-fonte">Fontes: ${p.fonte}</span>`
+    )
+    .addTo(map);
+});
+map.on("mouseenter", "alagamentos-nucleo", () => { map.getCanvas().style.cursor = "pointer"; });
+map.on("mouseleave", "alagamentos-nucleo", () => { map.getCanvas().style.cursor = ""; });
 
 // ---- cota (altitude) sob o cursor --------------------------------------------
 const cotaEl = document.getElementById("cota");

@@ -1,0 +1,84 @@
+{
+  "type": "FeatureCollection",
+  "_nota": "Pontos de alagamento recorrente — curados a partir de imprensa local e estudos (ver docs/alagamentos-casos-e-solucoes.md). Coordenadas ancoradas na malha viária do OSM/Overture. Edite/adicione pontos livremente: sev = 'alta' | 'media'; aproximado = true quando a posição precisa de confirmação local.",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Baixada do Mercado Municipal",
+        "corrego": "Gregório",
+        "sev": "alta",
+        "desc": "Epicentro histórico das enchentes de São Carlos — registros desde 1940. Em 26/11/2020, chuva de 138 mm em ~1h atingiu 130 estabelecimentos. Canal do Gregório tamponado/estrangulado sob o sistema viário.",
+        "fonte": "São Carlos Agora; SAAE; Observa Sanca/UFSCar"
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.8911, -22.0202] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Marginal do Gregório (Av. Com. Alfredo Maffei)",
+        "corrego": "Gregório",
+        "sev": "alta",
+        "desc": "Trecho canalizado do Gregório ao longo da marginal; transbordamentos recorrentes a jusante e a montante do Mercado.",
+        "fonte": "Jornal Primeira Página; São Carlos em Rede"
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.8853, -22.0208] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rotatória do Cristo (Vila Prado)",
+        "corrego": "Simeão",
+        "sev": "alta",
+        "desc": "Alagamentos recorrentes na rotatória; relatos de bueiros entupidos agravando o acúmulo. Bacia do Simeão.",
+        "fonte": "Portal SCDN; São Carlos em Rede"
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.8902, -22.0321] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Av. Getúlio Vargas (fundo de vale do Simeão)",
+        "corrego": "Simeão",
+        "sev": "media",
+        "desc": "Avenida de fundo de vale; receberá novas galerias ligadas ao reservatório do Simeão ampliado (projeto SAAE).",
+        "fonte": "SAAE; Portal SCDN"
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.8763, -22.0340] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rua Raimundo Corrêa × Av. Getúlio Vargas",
+        "corrego": "Simeão",
+        "sev": "media",
+        "desc": "Ponto de acúmulo citado pela imprensa local nas chuvas fortes.",
+        "fonte": "Portal SCDN"
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.87187, -22.03431] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pontilhão da Av. Paulista",
+        "corrego": "Gregório (afluência)",
+        "sev": "media",
+        "desc": "Passagem em nível rebaixado sob a ferrovia; acumula água em chuvas intensas.",
+        "fonte": "Portal SCDN"
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.900363, -22.019861] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CDHU Vila Isabel",
+        "corrego": "Simeão",
+        "sev": "media",
+        "desc": "Conjunto habitacional citado entre os pontos atingidos em chuvas fortes. Posição aproximada — confirmar localmente.",
+        "fonte": "Portal SCDN",
+        "aproximado": true
+      },
+      "geometry": { "type": "Point", "coordinates": [-47.8828, -22.0315] }
+    }
+  ]
+}

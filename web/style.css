@@ -123,6 +123,18 @@ html, body {
 }
 @keyframes girar { to { transform: rotate(360deg); } }
 
+/* popup dos pontos de alagamento */
+.maplibregl-popup-content {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+.pop-meta { color: #a4001f; font-size: 11.5px; font-weight: 600; }
+.pop-desc { margin: 6px 0; }
+.pop-fonte { color: #888; font-size: 11px; }
+
 @media (max-width: 600px) {
   #painel { width: calc(100% - 24px); }
 }
