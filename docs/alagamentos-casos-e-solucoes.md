@@ -196,7 +196,14 @@ protagonista do espaço**.
   municipais de SP/Curitiba). O Mercadão é o ativo mais óbvio e já existe.
 - **Boulevard do Gregório**: redesenho das marginais do canal no trecho
   central (calçadas largas, sombra, comércio voltado para o canal, iluminação
-  cênica da água) — versão são-carlense mínima do Madrid Río.
+  cênica da água) — versão são-carlense mínima do Madrid Río. A faixa
+  verde-azul alagável se estende da Chaminé até o Mercadão.
+- **Mobilidade — pontes + binário**: ~19 ruas cruzam o vale no trecho central
+  (Episcopal, Av. São Carlos, D. Alexandrina, São Joaquim…). Como no River
+  Walk, o projeto opera em dois níveis: travessias veiculares mantidas por
+  **pontes** na cota da rua, calçadão na cota d'água. O tráfego de passagem
+  das marginais migra para um **binário** em paralelas existentes
+  (Jesuíno de Arruda ⇄ General Osório), sem desapropriação.
 - **Circuito das Águas do Centro**: roteiro turístico conectando
   Mercadão → Catedral → Teatro/SESC → Estação Cultura (patrimônio ferroviário)
   → Parque da Chaminé — todos já mapeados como pontos de referência na

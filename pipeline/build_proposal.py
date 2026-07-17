@@ -22,7 +22,7 @@ import json
 import math
 import os
 
-from shapely.geometry import LineString, Point, mapping
+from shapely.geometry import LineString, Point, mapping, shape
 from shapely.ops import linemerge, unary_union
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,8 +44,16 @@ BICAO = (-47.9072, -22.0311)
 # Trechos do Gregório (limites em longitude, oeste→leste)
 LON_CONFLUENCIA = -47.9128   # encontro com o Monjolinho
 LON_BOULEVARD_W = -47.8970   # início do boulevard (jusante do Mercado)
+LON_MERCADO_W = -47.8925     # limite oeste da faixa alagável (engloba o Mercadão)
 LON_CHAMINE_W = -47.8865     # Rua São Paulo — início do Parque da Chaminé
 LON_CHAMINE_E = -47.8740     # limite leste do parque alagável
+
+# Classes viárias que recebem ponte veicular sobre o canal aberto
+CLASSES_PONTE = {"trunk", "primary", "secondary", "tertiary", "residential",
+                 "unclassified"}
+# Par de binário: vias paralelas existentes que absorvem o tráfego de
+# passagem das marginais (uma por sentido) — ver docs do projeto
+BINARIO = ["rua jesuíno de arruda", "rua general osório"]
 
 
 def gregorio_line() -> LineString:
@@ -158,6 +166,31 @@ def build_interventions(greg: LineString) -> None:
              "Singapura) e laboratório vivo de drenagem urbana com "
              "sinalização científica (USP/UFSCar)."))
 
+    # binário de tráfego: paralelas existentes viram par de mão única,
+    # absorvendo o fluxo de passagem das marginais requalificadas
+    ruas = json.load(open(os.path.join(DATA, "roads.geojson"), encoding="utf-8"))
+    for alvo in BINARIO:
+        partes = []
+        for f in ruas["features"]:
+            if (f["properties"].get("name") or "").lower() == alvo \
+               and f["geometry"]["type"] == "LineString":
+                partes.append(LineString(f["geometry"]["coordinates"]))
+        if not partes:
+            print(f"  ⚠ binário: rua não encontrada: {alvo}")
+            continue
+        linha = linemerge(unary_union(partes))
+        if linha.geom_type == "MultiLineString":
+            linha = max(linha.geoms, key=lambda l: l.length)
+        fs.append(feat(
+            linha,
+            name=f"Binário do Gregório — {alvo.title()}",
+            tipo="binario", horizonte="medio",
+            desc="Par de mão única em vias paralelas existentes que absorve o "
+                 "tráfego de passagem das marginais do canal, requalificadas "
+                 "como boulevard. Solução consolidada de engenharia de "
+                 "tráfego, sem desapropriação. As travessias norte–sul são "
+                 "mantidas por pontes sobre o canal."))
+
     write("interventions.geojson", fs)
 
 
@@ -232,6 +265,35 @@ def build_riverwalk(greg: LineString) -> None:
                    name="Parque Alagável da Chaminé — várzea"))
     fs.append(feat(trecho_parque.buffer(32 * M), tipo="lago",
                    name="Lago permanente"))
+
+    # faixa alagável linear estendendo o parque até o Mercadão
+    # (mais estreita, respeitando o casario do centro)
+    trecho_mercado = recorte(greg, LON_MERCADO_W, LON_CHAMINE_W)
+    fs.append(feat(trecho_mercado.buffer(38 * M), tipo="varzea",
+                   name="Faixa alagável do centro (até o Mercadão)"))
+
+    # pontes: mantêm as travessias veiculares existentes sobre o canal
+    ruas = json.load(open(os.path.join(DATA, "roads.geojson"), encoding="utf-8"))
+    canal_zona = trecho.buffer(20 * M)
+    n_pontes = 0
+    for f in ruas["features"]:
+        p = f["properties"]
+        if p.get("class") not in CLASSES_PONTE:
+            continue
+        if f["geometry"]["type"] != "LineString":
+            continue
+        g = shape(f["geometry"])
+        if not g.intersects(trecho):
+            continue
+        ponte = g.intersection(canal_zona)
+        if ponte.geom_type == "MultiLineString":
+            ponte = max(ponte.geoms, key=lambda l: l.length)
+        if ponte.geom_type != "LineString" or ponte.is_empty:
+            continue
+        fs.append(feat(ponte, tipo="ponte",
+                       name=f"Ponte — {p.get('name') or 'via local'}"))
+        n_pontes += 1
+    print(f"  {n_pontes} pontes geradas sobre o canal")
 
     write("proposal-riverwalk.geojson", fs)
 

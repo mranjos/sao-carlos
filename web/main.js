@@ -214,6 +214,26 @@ const estilo = {
       paint: { "line-color": "#6c584c", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1.5, 17, 5] },
     },
     {
+      // pontes veiculares mantendo as travessias sobre o canal
+      id: "rw-ponte", type: "line", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "ponte"],
+      layout: { visibility: "none", "line-cap": "butt" },
+      paint: {
+        "line-color": "#455a64",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 13, 3, 17, 11],
+      },
+    },
+    {
+      id: "rw-ponte-guia", type: "line", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "ponte"],
+      layout: { visibility: "none", "line-cap": "butt" },
+      paint: {
+        "line-color": "#eceff1",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 13, 0.6, 17, 1.6],
+        "line-dasharray": [2, 2],
+      },
+    },
+    {
       id: "rw-arvore", type: "circle", source: "riverwalk",
       filter: ["==", ["get", "tipo"], "arvore"],
       layout: { visibility: "none" },
@@ -254,9 +274,13 @@ const estilo = {
           "boulevard", "#0c8599",
           "circuito", "#7b2cbf",
           "parque-linear", "#2f9e44",
+          "binario", "#3a6ea5",
           "#0c8599"],
-        "line-width": ["match", ["get", "tipo"], "boulevard", 5, "circuito", 2.5, 4],
-        "line-dasharray": ["match", ["get", "tipo"], "circuito", ["literal", [0.4, 2]], ["literal", [2.5, 1.5]]],
+        "line-width": ["match", ["get", "tipo"], "boulevard", 5, "circuito", 2.5, "binario", 3.5, 4],
+        "line-dasharray": ["match", ["get", "tipo"],
+          "circuito", ["literal", [0.4, 2]],
+          "binario", ["literal", [4, 2]],
+          ["literal", [2.5, 1.5]]],
       },
     },
     {
@@ -556,7 +580,8 @@ for (const id of ["intervencoes-area", "intervencoes-linha"]) {
 
 // ---- modo hoje ⇄ proposta ------------------------------------------------------
 const CAMADAS_PROPOSTA = [
-  "rw-varzea", "rw-lago", "rw-canal", "rw-calcadao", "rw-passarela", "rw-arvore",
+  "rw-varzea", "rw-lago", "rw-canal", "rw-calcadao", "rw-passarela",
+  "rw-ponte", "rw-ponte-guia", "rw-arvore",
   "intervencoes-area", "intervencoes-contorno", "intervencoes-linha",
   "intervencoes-nome", "intervencoes-nome-linha",
 ];
