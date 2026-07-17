@@ -214,6 +214,24 @@ const estilo = {
       paint: { "line-color": "#6c584c", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1.5, 17, 5] },
     },
     {
+      // terraços da Praça d'água do Mercadão (nível 1 = cota d'água)
+      id: "rw-praca", type: "fill", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "praca-terraco"],
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": ["match", ["get", "nivel"],
+          1, "#e9d3ae", 2, "#ddba8c", 3, "#cfa269", "#ddba8c"],
+        "fill-opacity": 0.95,
+        "fill-outline-color": "#8c6239",
+      },
+    },
+    {
+      id: "rw-deck", type: "fill", source: "riverwalk",
+      filter: ["==", ["get", "tipo"], "deck"],
+      layout: { visibility: "none" },
+      paint: { "fill-color": "#a3703f", "fill-opacity": 0.97 },
+    },
+    {
       // pontes veiculares mantendo as travessias sobre o canal
       id: "rw-ponte", type: "line", source: "riverwalk",
       filter: ["==", ["get", "tipo"], "ponte"],
@@ -578,10 +596,27 @@ for (const id of ["intervencoes-area", "intervencoes-linha"]) {
   map.on("mouseleave", id, () => { map.getCanvas().style.cursor = ""; });
 }
 
+// popups dos elementos detalhados da praça
+for (const id of ["rw-praca", "rw-deck"]) {
+  map.on("click", id, (e) => {
+    const p = e.features[0].properties;
+    new maplibregl.Popup({ maxWidth: "300px" })
+      .setLngLat(e.lngLat)
+      .setHTML(
+        `<strong>${p.name}</strong><br>` +
+        `<span class="pop-meta pop-proposta">Praça d'água do Mercadão</span>` +
+        `<p class="pop-desc">${p.desc}</p>`
+      )
+      .addTo(map);
+  });
+  map.on("mouseenter", id, () => { map.getCanvas().style.cursor = "pointer"; });
+  map.on("mouseleave", id, () => { map.getCanvas().style.cursor = ""; });
+}
+
 // ---- modo hoje ⇄ proposta ------------------------------------------------------
 const CAMADAS_PROPOSTA = [
-  "rw-varzea", "rw-lago", "rw-canal", "rw-calcadao", "rw-passarela",
-  "rw-ponte", "rw-ponte-guia", "rw-arvore",
+  "rw-varzea", "rw-lago", "rw-canal", "rw-praca", "rw-deck", "rw-calcadao",
+  "rw-passarela", "rw-ponte", "rw-ponte-guia", "rw-arvore",
   "intervencoes-area", "intervencoes-contorno", "intervencoes-linha",
   "intervencoes-nome", "intervencoes-nome-linha",
 ];
@@ -669,6 +704,21 @@ document.getElementById("tour-prox").addEventListener("click", () => {
   else sairDoTour();
 });
 document.getElementById("tour-sair").addEventListener("click", sairDoTour);
+
+// ---- modo apresentação (?ui=0 esconde a interface; &modo=proposta abre no cenário)
+const params = new URLSearchParams(location.search);
+if (params.get("ui") === "0") {
+  document.getElementById("painel").style.display = "none";
+  document.querySelectorAll(
+    ".maplibregl-ctrl-top-right, .maplibregl-ctrl-bottom-left"
+  ).forEach((el) => { el.style.display = "none"; });
+}
+if (params.get("modo") === "proposta") {
+  map.on("load", () => {
+    modoProposta = true;
+    aplicarModo();
+  });
+}
 
 // ---- cota (altitude) sob o cursor --------------------------------------------
 const cotaEl = document.getElementById("cota");

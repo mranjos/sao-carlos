@@ -69,6 +69,17 @@ web/
   vendor/                # MapLibre GL JS vendorizado (sem CDN)
 ```
 
+## Modo apresentação e exportações
+
+- **Interface limpa para capturas:** abra `web/?ui=0` (esconde painel e
+  controles). `web/?ui=0&modo=proposta` já abre no cenário River Walk.
+- **GLB para Blender** (render foto-realista): `python pipeline/export_glb.py`
+  gera `export/centro-gregorio.glb` — terreno real, prédios e o cenário
+  proposto do vale do Gregório, em metros (File → Import → glTF 2.0).
+- As geometrias da proposta são geradas por `pipeline/build_proposal.py`
+  a partir do eixo real do córrego — largura de calçadão, espaçamento de
+  árvores, terraços da praça etc. são parâmetros no script.
+
 ## Ajustes úteis
 
 - **Área coberta:** edite `bbox` em `config.json` e rode o pipeline de novo.

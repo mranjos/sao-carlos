@@ -295,7 +295,72 @@ def build_riverwalk(greg: LineString) -> None:
         n_pontes += 1
     print(f"  {n_pontes} pontes geradas sobre o canal")
 
+    fs += build_praca_mercadao(greg)
+
     write("proposal-riverwalk.geojson", fs)
+
+
+def retangulo(c, u, largura_m, prof_m, offset_perp_m):
+    """Retângulo orientado: centro deslocado offset_perp_m na normal de u."""
+    ux, uy = u
+    vx, vy = -uy, ux
+    cx = c[0] + vx * offset_perp_m * M
+    cy = c[1] + vy * offset_perp_m * M
+    hw, hd = largura_m / 2 * M, prof_m / 2 * M
+    from shapely.geometry import Polygon
+    return Polygon([
+        (cx - ux * hw - vx * hd, cy - uy * hw - vy * hd),
+        (cx + ux * hw - vx * hd, cy + uy * hw - vy * hd),
+        (cx + ux * hw + vx * hd, cy + uy * hw + vy * hd),
+        (cx - ux * hw + vx * hd, cy - uy * hw + vy * hd),
+    ])
+
+
+def build_praca_mercadao(greg: LineString) -> list[dict]:
+    """Praça d'água do Mercadão: 3 terraços-arquibancada descendo ao canal
+    (Benthemplein), deck sobre a água (River Walk) e bosque no nível alto.
+    O lado dos terraços é o do Mercadão (norte do canal)."""
+    alvo = Point(*MERCADO)
+    d = greg.project(alvo)
+    c0 = greg.interpolate(d)
+    c1 = greg.interpolate(min(d + 10 * M, greg.length))
+    ux, uy = c1.x - c0.x, c1.y - c0.y
+    n = math.hypot(ux, uy) or 1e-12
+    u = (ux / n, uy / n)
+    # normal que aponta para o Mercadão
+    vx, vy = -u[1], u[0]
+    if (alvo.x - c0.x) * vx + (alvo.y - c0.y) * vy < 0:
+        u = (-u[0], -u[1])
+
+    c = (c0.x, c0.y)
+    fs = []
+    # terraço 1: arquibancada na cota d'água (+0,5 m) — alaga por projeto
+    fs.append(feat(retangulo(c, u, 64, 11, 14), tipo="praca-terraco", nivel=1,
+                   name="Arquibancada d'água",
+                   desc="Degraus na cota do canal — assentos e palco flutuante; "
+                        "no temporal, vira bacia de amortecimento (Benthemplein)."))
+    # terraço 2: nível intermediário (+2 m) — feira e quiosques
+    fs.append(feat(retangulo(c, u, 74, 10, 25), tipo="praca-terraco", nivel=2,
+                   name="Terraço da feira",
+                   desc="Nível intermediário com quiosques do Mercadão, feira "
+                        "de rua e mesas voltadas para a água."))
+    # terraço 3: praça na cota da rua, adro do Mercadão
+    fs.append(feat(retangulo(c, u, 84, 15, 38), tipo="praca-terraco", nivel=3,
+                   name="Adro do Mercadão",
+                   desc="Praça na cota da rua ligando o Mercado Municipal aos "
+                        "terraços; bosque, sombra e acesso em rampa/escadaria."))
+    # deck sobre o canal em frente à praça
+    fs.append(feat(retangulo(c, u, 22, 15, 0), tipo="deck",
+                   name="Deck do Mercadão",
+                   desc="Deck de madeira sobre o canal — mirante e travessia "
+                        "de pedestres em frente ao Mercado."))
+    # bosque no adro (fileira dupla)
+    for k in range(-3, 4):
+        for off in (34, 42):
+            px = c[0] + u[0] * k * 12 * M - u[1] * off * M
+            py = c[1] + u[1] * k * 12 * M + u[0] * off * M
+            fs.append(feat(Point(px, py), tipo="arvore"))
+    return fs
 
 
 if __name__ == "__main__":
