@@ -264,10 +264,14 @@ def main():
 
     print("[4/4] montando GLB…")
     cena = trimesh.util.concatenate(partes)
+    # normaliza: base do terreno no Z=0 (senão o modelo "flutua" a ~800 m
+    # e fica além do clip padrão do Blender — invisível ao importar)
+    cena.apply_translation([0, 0, -float(cena.bounds[0][2])])
     out = os.path.join(OUT_DIR, "centro-gregorio.glb")
     cena.export(out)
     print(f"✓ {out} ({os.path.getsize(out)/1e6:.1f} MB, "
-          f"{len(cena.vertices)} vértices)")
+          f"{len(cena.vertices)} vértices, bounds Z "
+          f"{cena.bounds[0][2]:.0f}–{cena.bounds[1][2]:.0f} m)")
 
 
 if __name__ == "__main__":
