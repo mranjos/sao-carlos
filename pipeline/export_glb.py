@@ -267,6 +267,10 @@ def main():
     # normaliza: base do terreno no Z=0 (senão o modelo "flutua" a ~800 m
     # e fica além do clip padrão do Blender — invisível ao importar)
     cena.apply_translation([0, 0, -float(cena.bounds[0][2])])
+    # glTF usa Y para cima; sem esta rotação o Blender importa a cidade
+    # "em pé" (plano urbano na vertical)
+    cena.apply_transform(trimesh.transformations.rotation_matrix(
+        -math.pi / 2, [1, 0, 0]))
     out = os.path.join(OUT_DIR, "centro-gregorio.glb")
     cena.export(out)
     print(f"✓ {out} ({os.path.getsize(out)/1e6:.1f} MB, "
