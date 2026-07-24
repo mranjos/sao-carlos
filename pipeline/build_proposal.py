@@ -297,6 +297,44 @@ def build_riverwalk(greg: LineString) -> None:
 
     fs += build_praca_mercadao(greg)
 
+    # ---- consistência urbana do cenário -----------------------------------
+    # 1) marca prédios dentro do corredor do projeto (rw=1): eles saem do
+    #    modo "proposta" (a faixa pressupõe remoção/realocação — como no
+    #    próprio piscinão do SAAE)
+    # 2) remove árvores que cairiam sobre prédios remanescentes
+    from shapely import STRtree
+    from shapely.geometry import shape as _shape
+
+    corredor = unary_union([
+        _shape(f["geometry"]) for f in fs
+        if f["properties"].get("tipo") in
+        ("canal", "varzea", "lago", "deck", "praca-terraco")
+    ] + [
+        _shape(f["geometry"]).buffer(8 * M) for f in fs
+        if f["properties"].get("tipo") == "calcadao"
+    ])
+
+    bpath = os.path.join(DATA, "buildings.geojson")
+    bfc = json.load(open(bpath, encoding="utf-8"))
+    geoms = [_shape(f["geometry"]) for f in bfc["features"]]
+    tree = STRtree(geoms)
+    atingidos = set(tree.query(corredor, predicate="intersects").tolist())
+    for i, f in enumerate(bfc["features"]):
+        if i in atingidos:
+            f["properties"]["rw"] = 1
+        else:
+            f["properties"].pop("rw", None)
+    with open(bpath, "w", encoding="utf-8") as fout:
+        json.dump(bfc, fout, ensure_ascii=False, separators=(",", ":"))
+    print(f"  {len(atingidos)} prédios no corredor do projeto (marcados rw=1)")
+
+    restantes = STRtree([g for i, g in enumerate(geoms) if i not in atingidos])
+    antes = len(fs)
+    fs = [f for f in fs if f["properties"].get("tipo") != "arvore"
+          or len(restantes.query(_shape(f["geometry"]).buffer(3 * M),
+                                 predicate="intersects")) == 0]
+    print(f"  {antes - len(fs)} árvores removidas (cairiam sobre prédios)")
+
     write("proposal-riverwalk.geojson", fs)
 
 

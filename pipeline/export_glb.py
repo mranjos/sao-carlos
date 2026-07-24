@@ -199,6 +199,9 @@ def main():
     fc = json.load(open(os.path.join(DATA, "buildings.geojson"), encoding="utf-8"))
     n = 0
     for f in fc["features"]:
+        # rw=1: prédio dentro do corredor do projeto — não entra no cenário
+        if f["properties"].get("rw") == 1:
+            continue
         g = shape(f["geometry"])
         if not dentro(g):
             continue

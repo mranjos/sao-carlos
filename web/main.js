@@ -626,6 +626,8 @@ const btnProposta = document.getElementById("modo-proposta");
 function aplicarModo() {
   const vis = modoProposta ? "visible" : "none";
   for (const id of CAMADAS_PROPOSTA) map.setLayoutProperty(id, "visibility", vis);
+  // prédios dentro do corredor do projeto (rw=1) saem no cenário proposto
+  map.setFilter("predios-3d", modoProposta ? ["!=", ["get", "rw"], 1] : null);
   // no cenário proposto, os alertas de alagamento ficam esmaecidos (problema tratado)
   map.setPaintProperty("alagamentos-halo", "circle-opacity", modoProposta ? 0.05 : 0.22);
   map.setPaintProperty("alagamentos-halo", "circle-stroke-opacity", modoProposta ? 0.15 : 0.6);
